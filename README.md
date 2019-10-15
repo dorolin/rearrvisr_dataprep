@@ -4,6 +4,7 @@
 
 The scripts and BASH code snippets in this repository were used to prepare example input files for the R package [`rearrvisr`](https://github.com/dorolin/rearrvisr). Some of them are more sophisticated Perl scripts that have multiple command line arguments and can be adjusted to work on a variety of input files. Others are rather unsophisticated ("quick-and-dirty") BASH code snippets that might easily fail on non-Linux operation systems, and where a lot of improvement in efficiency could be done. There is absolutely no warranty that the workflow presented below will produce accurate results when repeated on fasta or gff3 files that are formatted differently than the ones for which the scripts were written.
 
+
 ## Genome assemblies
 
 Peptide sequences and annotation information (pep.all.fa and gff3 files) for genes from 12 *Drosophila* species were downloaded on Dec 23 2017 from Ensemble Release 91 ([http://dec2017.archive.ensembl.org](http://dec2017.archive.ensembl.org); *D. melanogaster*) or Ensemble Metazoa Release 37 ([http://oct2017-metazoa.ensembl.org](http://oct2017-metazoa.ensembl.org); *D. ananassae*, *D. erecta*, *D. grimshawi*, *D. mojavensis*, *D. persimilis*, *D. pseudoobscura*, *D. sechellia*, *D. simulans*, *D. virilis*, *D. willistoni*, and *D. yakuba*).
@@ -22,6 +23,7 @@ Species | ID | Genome version | Source | Date
 *D. virilis*       | VIR | dvir_caf1 | Ensemble Metazoa 37 | 15/08/17 
 *D. willistoni*    | WIL | dwil_caf1 | Ensemble Metazoa 37 | 15/08/17 
 *D. yakuba*        | YAK | dyak_caf1 | Ensemble Metazoa 37 | 15/08/17 
+
 
 ## Preparation of FASTA files
 
@@ -52,7 +54,8 @@ Fasta files for all 12 species were prepared as shown below for *D. melanogaster
     ```
     
     &rarr; *Returns file MEL_good_info.txt.*
-    
+
+
 ## Preparation of GFF3  files
 
 Gff3 files for all 12 species were prepared as shown below for *D. melanogaster*.
@@ -124,7 +127,7 @@ Gff3 files for all 12 species were prepared as shown below for *D. melanogaster*
 
 ## Identification of orthologs
 
-Orthologs were identified for retained sequences of all 12 species with OMA standalone v2.2.0 (Altenhoff et al. 2015), using as guidance tree the phylogeny published in Drosophila 12 Genomes Consortium (2007), and default settings otherwise.
+Orthologs were identified for retained sequences of all 12 species with OMA standalone v2.2.0 (Altenhoff et al. 2015), using as guidance tree the phylogeny published in Drosophila 12 Genomes Consortium (2007), and default settings otherwise. More information on running OMA and usage examples (e.g., for parallelization) are in the [OMA standalone documentation](https://omabrowser.org/standalone/#downloads).
 
 * Species tree in Newick format as guidance tree for OMA, which was added to the parameters/parameters.drw file.
     
@@ -148,7 +151,7 @@ Orthologs were identified for retained sequences of all 12 species with OMA stan
     cd ..
     ```
 
-* Place the parameters/parameters.drw file in the directory where OMA will be run (path/to/OMA/) and run OMA in three steps. More information on running OMA and usage examples (e.g., for parallelization) are in the [OMA standalone documentation](https://omabrowser.org/standalone/#downloads).
+* Place the parameters/parameters.drw file in the directory where OMA will be run (path/to/OMA/) and run OMA in three steps.
     
     ```bash
     OMA -c 
@@ -158,9 +161,10 @@ Orthologs were identified for retained sequences of all 12 species with OMA stan
 
     &rarr; *Creates the directory Output/ that contains files that will be used in the steps below.*
 
+
 ## Phylogeny
 
-A species tree with branch lengths is required as input file for the ancestral genome reconstruction software ANGES v1.01 (Jones et al. 2012). To generate such a tree, sequences of OMA orthologous groups that only included one-to-one orthologous genes present in all 12 *Drosophila* species were extracted and aligned separately for each orthologous group with MAFFT v7.407 (Katoh et al. 2002; Katoh and Standley 2013). Alignments with not more than 20% missing data were concatenated, and a phylogenetic tree was computed with RAxML v8.2.12 (Stamatakis 2014).
+A species tree with branch lengths is required as input file for the ancestral genome reconstruction software ANGES v1.01 (Jones et al. 2012). To generate such a tree, sequences of OMA orthologous groups that only included one-to-one orthologous genes present in all 12 *Drosophila* species were extracted and aligned separately for each orthologous group with MAFFT v7.407 (Katoh et al. 2002; Katoh and Standley 2013). More information on running MAFFT are in the [MAFFT manual](https://mafft.cbrc.jp/alignment/software/manual/manual.html). Alignments with not more than 20% missing data were concatenated, and a phylogenetic tree was computed with RAxML v8.2.12 (Stamatakis 2014). More information on running RAxML and usage examples are in the [RAxML manual](https://github.com/stamatak/standard-RAxML/blob/master/manual/NewManual.pdf) and the [RAxML hands-on session](https://cme.h-its.org/exelixis/web/software/raxml/hands_on.html).
 
 * Identify orthologous groups in OMA output that have genes for all species. This is based on data in the path/to/OMA/Output/PhyleticProfileOMAGroups.txt file generated by OMA.
 
@@ -186,7 +190,7 @@ A species tree with branch lengths is required as input file for the ancestral g
     done < path/to/OMA/Output/fullOneOneOGfiles.txt
     ```
     
-* Align sequences for each orthologous group with MAFFT, using the iterative refinement method incorporating local pairwise alignment information, as shown for one example below. More information on running MAFFT are in the [MAFFT manual](https://mafft.cbrc.jp/alignment/software/manual/manual.html).
+* Align sequences for each orthologous group with MAFFT, using the iterative refinement method incorporating local pairwise alignment information, as shown for one example below. 
 
     ```bash
     mafft --localpair --maxiterate 1000 path/to/MAFFT/OG10003.fa >path/to/MAFFT/OG10003.msa
@@ -226,17 +230,42 @@ A species tree with branch lengths is required as input file for the ancestral g
     
     &rarr; *Returns file path/to/MAFFT/concatOGAlignment.phy.*
     
-* 
+* Copy path/to/MAFFT/concatOGAlignment.phy to the directory where RAxML will be run (path/to/RAxML/), and change to this directory. Then remove columns from the alignment that only contain undetermined values by performing a test run with RAxML.
 
+    ```bash
+    raxmlHPC-AVX -f c -m PROTGAMMAAUTO -s concatOGAlignment.phy -n Test
+    ```
+    
+    &rarr; *Returns file concatOGAlignment.phy.reduced.*
+
+* Compute phylogenetic tree with RAxML, using the rapid bootstrapping algorithm and automatic determination of the best protein substitution model.
+
+    ```bash
+    raxmlHPC-PTHREADS-AVX -f a -x 6438990 -p 74378439 -# autoMRE -m PROTGAMMAAUTO \
+                          --auto-prot=ml -s concatOGAlignment.phy.reduced -n One -T 24
+    ```
+    
+    &rarr; *Returns unrooted phylogenetic tree RAxML_bestTree.One.*
+    
+* Root phylogenetic tree at the branch that best balances the subtree lengths.
+
+    ```bash
+    raxmlHPC-AVX -f I -m PROTGAMMAJTTF -t RAxML_bestTree.One -n OneRooted
+    ```
+    
+    &rarr; *Returns rooted phylogenetic tree RAxML_rootedTree.OneRooted.*
 
 
 ## Preparation of genome maps
 
 
+
 ## Ancestral genome reconstruction
 
 
+
 ## Identification of rearrangements
+
 
 
 # References
